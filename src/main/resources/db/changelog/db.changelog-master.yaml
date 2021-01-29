@@ -1,0 +1,95 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: alishka
+      changes:
+        - createTable:
+            tableName: card
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: card_holder_name
+                  type: varchar(255)
+              - column:
+                  name: card_period
+                  type: int
+              - column:
+                  name: urgent
+                  type: boolean
+              - column:
+                  name: code_word
+                  type: varchar(255)
+              - column:
+                  name: card_number
+                  type: varchar(255)
+              - column:
+                  name: type_id
+                  type: int
+                  constraints:
+                    references: card_type(id)
+        - createTable:
+            tableName: card_type
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(20)
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: creation_time
+                  type: timestamp
+              - column:
+                  name: status
+                  type: varchar(20)
+              - column:
+                  name: card_id
+                  constraints:
+                    references: card(id)
+              - column:
+                  name: card_type_id
+                  constraints:
+                    references: card_type(id)
+              - column:
+                  name: user_id
+                  constraints:
+                    references: users(id)
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                name: id
+                type: int
+                autoIncrement: true
+                constraints:
+                  primaryKey: true
+                  nullable: false
+              - column:
+                  name: password
+                  type: varchar(50)
+              - column:
+                  name: role
+                  type: varchar(15)
+              - column:
+                  name: username
+                  type: varchar(100)
