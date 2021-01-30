@@ -70,9 +70,9 @@ public class GuavaService {
     public SubmitResponse submitOrder(Integer orderId, String username) {
         OrderEntity orderEntity = orderDao.getOne(orderId);
         if (!orderEntity.getUser().getUsername().equals(username)){
-            throw new AccessDenyException("You can submit only yours orders");
+            throw new AccessDenyException("You can submit only yours orders", "10401");
         }if (orderEntity.getStatus().equals("Submitted")){
-            throw new AccessDenyException("This order is already submitted");
+            throw new AccessDenyException("This order is already submitted", "10402");
         }
         String cardNumber = generateCardNumber();
         String accountNumber = generateAccountNumber();
@@ -117,8 +117,10 @@ public class GuavaService {
     public OrderResponse updateOrder(OrderRequest orderRequest, Integer orderId, String username) {
         OrderEntity order = orderDao.getOne(orderId);
         CardEntity card = order.getCard();
-        if (order.getStatus().equals("Submitted") || !(order.getUser().getUsername().equals(username))){
-            throw new AccessDenyException("You can't update this order!");
+        if (order.getStatus().equals("Submitted")){
+            throw new AccessDenyException("You can't update this order!", "10402");
+        }else if (!(order.getUser().getUsername().equals(username))){
+            throw new AccessDenyException("You can't update this order!", "10401");
         }
         order.setCardType(typeDao.getOne(orderRequest.getCardTypeId()));
         card.setCardHolderName(orderRequest.getCardHolderName());
@@ -137,7 +139,7 @@ public class GuavaService {
     public OrderDetailsResponse getOrderDetails(String username, Integer orderId) {
         OrderEntity order = orderDao.getOne(orderId);
         if (!order.getUser().getUsername().equals(username)){
-            throw new AccessDenyException("You have no permission to view this order");
+            throw new AccessDenyException("You have no permission to view this order", "10401");
         }
 
         return OrderDetailsResponse.builder()

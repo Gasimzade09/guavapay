@@ -15,9 +15,6 @@ spring:
       #      DISABLE JPA VERSION EXCEPTION
       hibernate.temp.use_jdbc_metadata_defaults: false
     show-sql: true
-#    generate-ddl: false
-#    hibernate:
-#      ddl-auto: none
 jwt:
   secret: mySecretSignature
   expiration: 900000

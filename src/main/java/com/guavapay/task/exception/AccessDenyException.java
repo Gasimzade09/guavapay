@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @Data
 public class AccessDenyException extends RuntimeException{
     private String message;
+    private String messageCode;
 }
