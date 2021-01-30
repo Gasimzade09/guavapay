@@ -15,7 +15,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: password
-                  type: varchar(50)
+                  type: varchar(255)
               - column:
                   name: role
                   type: varchar(15)

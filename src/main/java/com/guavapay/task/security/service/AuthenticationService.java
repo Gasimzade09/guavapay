@@ -17,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
-import java.util.Random;
 
 @Service
 public class AuthenticationService {
@@ -71,7 +70,7 @@ public class AuthenticationService {
             userDao.save(userEntity);
             return userEntity;
         } else {
-            throw new AuthenticationException("This email is already exists");
+            throw new AuthenticationException("This user is already exists");
         }
     }
 }

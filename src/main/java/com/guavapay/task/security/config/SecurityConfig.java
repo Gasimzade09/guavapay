@@ -38,6 +38,8 @@ public class SecurityConfig
         this.unauthorizedHandler = unauthorizedHandler;
     }
 
+
+
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -66,12 +68,13 @@ public class SecurityConfig
                 .authorizeRequests()
                 .antMatchers("/api/auth").anonymous()
                 .antMatchers("/api/reg").anonymous()
+                .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/order/**").hasRole("USER")
                 .anyRequest().authenticated();
         http
                 .addFilterBefore(authenticationTokenFilterBean(),
                         UsernamePasswordAuthenticationFilter.class);
-
+        http.headers().frameOptions().disable();
     }
 
     @Override
