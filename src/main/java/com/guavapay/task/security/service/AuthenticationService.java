@@ -9,6 +9,7 @@ import com.guavapay.task.security.model.Role;
 import com.guavapay.task.security.model.dto.JwtAuthenticationRequest;
 import com.guavapay.task.security.model.dto.JwtAuthenticationResponse;
 import com.guavapay.task.security.util.TokenUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -23,16 +24,20 @@ public class AuthenticationService {
 
     private final TokenUtils tokenUtils;
 
+    private final BCryptPasswordEncoder encoder;
+
     private final AuthenticationManager authenticationManager;
 
     private final UserDao userDao;
 
     public AuthenticationService(TokenUtils tokenUtils,
                                  AuthenticationManager authenticationManager,
-                                 UserDao userDao) {
+                                 UserDao userDao,
+                                 @Qualifier("commonPasswordEncoder") BCryptPasswordEncoder encoder) {
         this.tokenUtils = tokenUtils;
         this.authenticationManager = authenticationManager;
         this.userDao = userDao;
+        this.encoder = encoder;
     }
 
 
@@ -60,7 +65,7 @@ public class AuthenticationService {
     public UserEntity signUp(UserDto user){
         UserEntity checkUserName = userDao.getByUsername(user.getUsername());
         if (checkUserName == null){
-            String password = new BCryptPasswordEncoder().encode(user.getPassword());
+            String password = encoder.encode(user.getPassword());
             UserEntity userEntity = UserEntity.builder()
                     .username(user.getUsername())
                     .password(password)
