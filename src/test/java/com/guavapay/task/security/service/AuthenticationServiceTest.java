@@ -49,22 +49,22 @@ class AuthenticationServiceTest {
                 .when(userDao)
                 .getByUsername(userDto.getUsername());
 
-        Mockito.doReturn(password)
-                .when(encoder)
-                .encode(userDto.getPassword());
+//        Mockito.doReturn(password)
+//                .when(encoder)
+//                .encode(userDto.getPassword());
 
 
-        UserEntity actual = service.signUp(userDto);
+        UserDto actual = service.signUp(userDto);
 
         assertNotNull(actual);
         assertEquals(userDto.getUsername(), actual.getUsername());
-        assertEquals(password, actual.getPassword());
+        assertEquals(userDto.getPassword(), actual.getPassword());
 
         Mockito.verify(userDao, Mockito.times(1))
                 .getByUsername(userDto.getUsername());
 
         Mockito.verify(userDao, Mockito.times(1))
-                .save(actual);
+                .save(Mockito.any(UserEntity.class));
 
         Mockito.verify(encoder, Mockito.times(1))
                 .encode(userDto.getPassword());
@@ -110,7 +110,6 @@ class AuthenticationServiceTest {
         assertNotNull(actual);
         assertEquals(token, actual.getToken());
 
-        Mockito.verify(tokenUtils, Mockito.times(1))
-                .generateToken(request.getUsername());
+        Mockito.verify(tokenUtils, Mockito.times(1)).generateToken(request.getUsername());
     }
 }

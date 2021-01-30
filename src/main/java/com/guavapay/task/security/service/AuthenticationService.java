@@ -62,7 +62,7 @@ public class AuthenticationService {
 
 
 
-    public UserEntity signUp(UserDto user){
+    public UserDto signUp(UserDto user){
         UserEntity checkUserName = userDao.getByUsername(user.getUsername());
         if (checkUserName == null){
             String password = encoder.encode(user.getPassword());
@@ -71,9 +71,8 @@ public class AuthenticationService {
                     .password(password)
                     .role(Role.ROLE_USER.toString())
                     .build();
-
             userDao.save(userEntity);
-            return userEntity;
+            return user;
         } else {
             throw new AuthenticationException("This user is already exists");
         }

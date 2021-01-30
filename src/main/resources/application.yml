@@ -2,7 +2,7 @@ server:
   port: 8082
 spring:
   profiles:
-    active: dev
+    active: default
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml

@@ -26,7 +26,7 @@ public class AuthenticationController {
 
 
     @PostMapping("/reg")
-    public void reg(@RequestBody UserDto user){
-        service.signUp(user);
+    public UserDto reg(@RequestBody UserDto user){
+        return service.signUp(user);
     }
 }

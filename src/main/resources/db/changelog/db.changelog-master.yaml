@@ -66,6 +66,9 @@ databaseChangeLog:
                   constraints:
                     foreignKeyName: fk_card_card_type
                     references: card_type(id)
+              - column:
+                  name: account_number
+                  type: varchar(255)
         - createTable:
             tableName: orders
             columns:
@@ -100,3 +103,40 @@ databaseChangeLog:
                   constraints:
                     foreignKeyName: fk_orders_users
                     references: users(id)
+  - changeSet:
+      id: 1.0/7
+      author: alishka
+      changes:
+        - insert:
+            tableName: card_type
+            columns:
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: name
+                  value: "Visa"
+        - insert:
+            tableName: card_type
+            columns:
+              - column:
+                  name: id
+                  value: 2
+              - column:
+                  name: name
+                  value: "MasterCard"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: password
+                  value: "$2a$10$ItkLZ99x4YN9Z22M9lMHieOWk/FqIvP0bdr/Iy6qJNvlvnsGjaEoC"
+              - column:
+                  name: username
+                  value: "demo"
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: role
+                  value: "ROLE_USER"
