@@ -4,6 +4,38 @@ databaseChangeLog:
       author: alishka
       changes:
         - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(50)
+              - column:
+                  name: role
+                  type: varchar(15)
+              - column:
+                  name: username
+                  type: varchar(100)
+        - createTable:
+            tableName: card_type
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(20)
+        - createTable:
             tableName: card
             columns:
               - column:
@@ -32,20 +64,8 @@ databaseChangeLog:
                   name: type_id
                   type: int
                   constraints:
+                    foreignKeyName: fk_card_card_type
                     references: card_type(id)
-        - createTable:
-            tableName: card_type
-            columns:
-              - column:
-                  name: id
-                  type: int
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: name
-                  type: varchar(20)
         - createTable:
             tableName: orders
             columns:
@@ -64,32 +84,19 @@ databaseChangeLog:
                   type: varchar(20)
               - column:
                   name: card_id
+                  type: int
                   constraints:
+                    foreignKeyName: fk_orders_card
                     references: card(id)
               - column:
                   name: card_type_id
+                  type: int
                   constraints:
+                    foreignKeyName: fk_orders_card_type
                     references: card_type(id)
               - column:
                   name: user_id
+                  type: int
                   constraints:
+                    foreignKeyName: fk_orders_users
                     references: users(id)
-        - createTable:
-            tableName: users
-            columns:
-              - column:
-                name: id
-                type: int
-                autoIncrement: true
-                constraints:
-                  primaryKey: true
-                  nullable: false
-              - column:
-                  name: password
-                  type: varchar(50)
-              - column:
-                  name: role
-                  type: varchar(15)
-              - column:
-                  name: username
-                  type: varchar(100)

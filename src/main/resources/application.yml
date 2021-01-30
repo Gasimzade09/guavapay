@@ -5,18 +5,19 @@ spring:
     url: jdbc:postgresql://localhost:5432/guavapay
     username: postgres
     password: admin
-#  liquibase:
-#    enabled: true
-#    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
     properties:
       #      DISABLE JPA VERSION EXCEPTION
       hibernate.temp.use_jdbc_metadata_defaults: false
     show-sql: true
-    generate-ddl: true
-    hibernate:
-      ddl-auto: update
+#    generate-ddl: false
+#    hibernate:
+#      ddl-auto: none
 jwt:
   secret: mySecretSignature
   expiration: 900000
