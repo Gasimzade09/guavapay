@@ -1,6 +1,7 @@
 package com.guavapay.task.security.controller;
 
 
+import com.guavapay.task.dto.Response;
 import com.guavapay.task.dto.UserDto;
 import com.guavapay.task.security.model.dto.JwtAuthenticationRequest;
 import com.guavapay.task.security.model.dto.JwtAuthenticationResponse;
@@ -26,7 +27,7 @@ public class AuthenticationController {
 
 
     @PostMapping("/reg")
-    public UserDto reg(@RequestBody UserDto user){
+    public Response reg(@RequestBody UserDto user){
         return service.signUp(user);
     }
 }

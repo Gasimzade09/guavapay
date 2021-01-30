@@ -2,6 +2,7 @@ package com.guavapay.task.security.service;
 
 import com.guavapay.task.config.GuavaConfig;
 import com.guavapay.task.dao.UserDao;
+import com.guavapay.task.dto.Response;
 import com.guavapay.task.dto.UserDto;
 import com.guavapay.task.entity.UserEntity;
 import com.guavapay.task.security.exceptions.AuthenticationException;
@@ -43,22 +44,18 @@ class AuthenticationServiceTest {
                 .username("alishka1991")
                 .password("123456789")
                 .build();
-        String password = "blablabla";
 
         Mockito.doReturn(null)
                 .when(userDao)
                 .getByUsername(userDto.getUsername());
 
-//        Mockito.doReturn(password)
-//                .when(encoder)
-//                .encode(userDto.getPassword());
 
-
-        UserDto actual = service.signUp(userDto);
+        Response actual = service.signUp(userDto);
 
         assertNotNull(actual);
-        assertEquals(userDto.getUsername(), actual.getUsername());
-        assertEquals(userDto.getPassword(), actual.getPassword());
+        assertNotNull(actual.getUserDto());
+        assertEquals(userDto.getUsername(), actual.getUserDto().getUsername());
+        assertEquals(userDto.getPassword(), actual.getUserDto().getPassword());
 
         Mockito.verify(userDao, Mockito.times(1))
                 .getByUsername(userDto.getUsername());

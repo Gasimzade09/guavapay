@@ -69,6 +69,7 @@ public class SecurityConfig
                 .antMatchers("/api/auth").anonymous()
                 .antMatchers("/api/reg").anonymous()
                 .antMatchers("/h2-console/**").permitAll()
+                .antMatchers("/get/types").permitAll()
                 .antMatchers("/order/**").hasRole("USER")
                 .anyRequest().authenticated();
         http

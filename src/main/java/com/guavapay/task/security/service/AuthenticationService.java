@@ -2,6 +2,7 @@ package com.guavapay.task.security.service;
 
 
 import com.guavapay.task.dao.UserDao;
+import com.guavapay.task.dto.Response;
 import com.guavapay.task.dto.UserDto;
 import com.guavapay.task.entity.UserEntity;
 import com.guavapay.task.security.exceptions.AuthenticationException;
@@ -62,7 +63,7 @@ public class AuthenticationService {
 
 
 
-    public UserDto signUp(UserDto user){
+    public Response signUp(UserDto user){
         UserEntity checkUserName = userDao.getByUsername(user.getUsername());
         if (checkUserName == null){
             String password = encoder.encode(user.getPassword());
@@ -72,7 +73,7 @@ public class AuthenticationService {
                     .role(Role.ROLE_USER.toString())
                     .build();
             userDao.save(userEntity);
-            return user;
+            return Response.builder().userDto(user).build();
         } else {
             throw new AuthenticationException("This user is already exists");
         }

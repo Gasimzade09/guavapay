@@ -4,17 +4,12 @@ import com.guavapay.task.dao.CardDao;
 import com.guavapay.task.dao.CardTypeDao;
 import com.guavapay.task.dao.OrderDao;
 import com.guavapay.task.dao.UserDao;
-import com.guavapay.task.dto.OrderDetailsResponse;
-import com.guavapay.task.dto.OrderRequest;
-import com.guavapay.task.dto.OrderResponse;
-import com.guavapay.task.dto.SubmitResponse;
+import com.guavapay.task.dto.*;
 import com.guavapay.task.entity.CardEntity;
 import com.guavapay.task.entity.CardType;
 import com.guavapay.task.entity.OrderEntity;
 import com.guavapay.task.entity.UserEntity;
 import com.guavapay.task.exception.AccessDenyException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,11 +33,19 @@ public class GuavaService {
         this.cardDao = cardDao;
     }
 
-    public List<CardType> getAllCardTypes() {
-        return typeDao.findAll();
+    public Response getAllCardTypes() {
+        List<CardType> cardTypes = typeDao.findAll();
+        List<CardTypeDto> dto = new ArrayList<>();
+        for (CardType card : cardTypes) {
+            dto.add(CardTypeDto.builder()
+                    .id(card.getId())
+                    .name(card.getName())
+                    .build());
+        }
+        return Response.builder().cardTypes(dto).build();
     }
 
-    public OrderResponse addOrder(OrderRequest orderRequest, String username) {
+    public Response addOrder(OrderRequest orderRequest, String username) {
         UserEntity userEntity = userDao.getByUsername(username);
         CardType cardType = typeDao.getOne(orderRequest.getCardTypeId());
         CardEntity cardEntity = CardEntity.builder()
@@ -60,18 +63,23 @@ public class GuavaService {
                 .card(cardEntity)
                 .build();
 
+//        This is for the unit tests to pass
         orderEntity = orderDao.save(orderEntity);
 
-        return OrderResponse.builder()
-                .orderCreationTime(orderEntity.getCreationTime())
-                .orderId(orderEntity.getId().toString())
-                .orderStatus(orderEntity.getStatus())
+        return Response.builder()
+                .orderResponse(OrderResponse.builder()
+                        .orderCreationTime(orderEntity.getCreationTime())
+                        .orderId(orderEntity.getId().toString())
+                        .orderStatus(orderEntity.getStatus())
+                        .build())
                 .build();
     }
 
-    public SubmitResponse submitOrder(Integer orderId, String username) {
+    public Response submitOrder(Integer orderId, String username) {
         OrderEntity orderEntity = orderDao.getOne(orderId);
-        if (!orderEntity.getUser().getUsername().equals(username)){
+        if (orderEntity == null){
+            return Response.builder().submitResponse(SubmitResponse.builder().build()).build();
+        }if (!orderEntity.getUser().getUsername().equals(username)){
             throw new AccessDenyException("You can submit only yours orders", "10401");
         }if (orderEntity.getStatus().equals("Submitted")){
             throw new AccessDenyException("This order is already submitted", "10402");
@@ -89,22 +97,27 @@ public class GuavaService {
             }
         }
 
-
         orderEntity.setStatus("Submitted");
         CardEntity cardEntity = orderEntity.getCard();
         cardEntity.setCardNumber(cardNumber);
         cardEntity.setAccountNumber(accountNumber);
         cardDao.save(cardEntity);
 
-        return SubmitResponse.builder()
-                .accountNumber(accountNumber)
-                .cardNumber(cardNumber)
+        return Response.builder()
+                .submitResponse(SubmitResponse.builder()
+                        .accountNumber(accountNumber)
+                        .cardNumber(cardNumber)
+                        .build())
                 .build();
     }
 
-    public List<OrderResponse> getOrders(String username) {
+    public Response getOrders(String username) {
         List<OrderEntity> orderEntities = userDao.getByUsername(username).getOrderEntities();
         List<OrderResponse> responses = new ArrayList<>();
+        if (orderEntities == null){
+            responses.add(OrderResponse.builder().build());
+            return Response.builder().orderResponses(responses).build();
+        }
         for (OrderEntity e : orderEntities) {
             OrderResponse response = OrderResponse.builder()
                     .orderStatus(e.getStatus())
@@ -113,13 +126,15 @@ public class GuavaService {
                     .build();
             responses.add(response);
         }
-        return responses;
+        return Response.builder().orderResponses(responses).build();
     }
 
-    public OrderResponse updateOrder(OrderRequest orderRequest, Integer orderId, String username) {
+    public Response updateOrder(OrderRequest orderRequest, Integer orderId, String username) {
         OrderEntity order = orderDao.getOne(orderId);
         CardEntity card = order.getCard();
-        if (order.getStatus().equals("Submitted")){
+        if (order == null){
+            return Response.builder().orderResponse(OrderResponse.builder().build()).build();
+        }else if (order.getStatus().equals("Submitted")){
             throw new AccessDenyException("You can't update this order!", "10402");
         }else if (!(order.getUser().getUsername().equals(username))){
             throw new AccessDenyException("You can't update this order!", "10401");
@@ -131,25 +146,31 @@ public class GuavaService {
         card.setUrgent(orderRequest.getUrgent());
         cardDao.save(card);
         orderDao.save(order);
-        return OrderResponse.builder()
-                .orderId(orderId.toString())
-                .orderStatus(order.getStatus())
-                .orderCreationTime(order.getCreationTime())
+        return Response.builder()
+                .orderResponse(OrderResponse.builder()
+                        .orderId(orderId.toString())
+                        .orderStatus(order.getStatus())
+                        .orderCreationTime(order.getCreationTime())
+                        .build())
                 .build();
     }
 
-    public OrderDetailsResponse getOrderDetails(String username, Integer orderId) {
+    public Response getOrderDetails(String username, Integer orderId) {
         OrderEntity order = orderDao.getOne(orderId);
-        if (!order.getUser().getUsername().equals(username)){
+        if (order == null){
+            return Response.builder().orderDetailsResponse(OrderDetailsResponse.builder().build()).build();
+        }else if (!order.getUser().getUsername().equals(username)){
             throw new AccessDenyException("You have no permission to view this order", "10401");
         }
 
-        return OrderDetailsResponse.builder()
-                .cardHolderName(order.getCard().getCardHolderName())
-                .cardType(order.getCardType().getName())
-                .cardPeriod(order.getCard().getCardPeriod())
-                .codeword(order.getCard().getCodeWord())
-                .urgent(order.getCard().getUrgent())
+        return Response.builder()
+                .orderDetailsResponse(OrderDetailsResponse.builder()
+                        .cardHolderName(order.getCard().getCardHolderName())
+                        .cardType(order.getCardType().getName())
+                        .cardPeriod(order.getCard().getCardPeriod())
+                        .codeword(order.getCard().getCodeWord())
+                        .urgent(order.getCard().getUrgent())
+                        .build())
                 .build();
     }
 }

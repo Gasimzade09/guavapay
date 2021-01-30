@@ -4,10 +4,7 @@ import com.guavapay.task.dao.CardDao;
 import com.guavapay.task.dao.CardTypeDao;
 import com.guavapay.task.dao.OrderDao;
 import com.guavapay.task.dao.UserDao;
-import com.guavapay.task.dto.OrderDetailsResponse;
-import com.guavapay.task.dto.OrderRequest;
-import com.guavapay.task.dto.OrderResponse;
-import com.guavapay.task.dto.SubmitResponse;
+import com.guavapay.task.dto.*;
 import com.guavapay.task.entity.CardEntity;
 import com.guavapay.task.entity.CardType;
 import com.guavapay.task.entity.OrderEntity;
@@ -48,23 +45,28 @@ class GuavaServiceTest {
 
     @Test
     void testGetAllCardTypes(){
-        List<CardType> expected = new ArrayList<>();
-        expected.add(CardType.builder()
+        List<CardType> responseDao = new ArrayList<>();
+        List<CardTypeDto> expected = new ArrayList<>();
+        expected.add(CardTypeDto.builder().name("Visa").id(1).build());
+        responseDao.add(CardType.builder()
                 .id(1)
                 .name("Visa")
                 .build());
 
-        Mockito.doReturn(expected)
+        Mockito.doReturn(responseDao)
                 .when(typeDao)
                 .findAll();
 
-        List<CardType> actual = guavaService.getAllCardTypes();
+        Response actual = guavaService.getAllCardTypes();
 
         assertNotNull(actual);
-        assertNotNull(actual.get(0));
-        assertEquals(expected.size(), actual.size());
-        assertEquals(expected, actual);
-        assertEquals(expected.get(0), actual.get(0));
+        assertNotNull(actual.getCardTypes());
+        assertNotNull(actual.getCardTypes().get(0));
+        assertEquals(expected.size(), actual.getCardTypes().size());
+        assertEquals(expected, actual.getCardTypes());
+        assertEquals(expected.get(0), actual.getCardTypes().get(0));
+
+        Mockito.verify(typeDao, Mockito.times(1)).findAll();
 
     }
 
@@ -121,8 +123,10 @@ class GuavaServiceTest {
                 .when(orderDao)
                 .save(Mockito.any(OrderEntity.class));
 
-        OrderResponse actual = guavaService.addOrder(request, username);
+        Response actual = guavaService.addOrder(request, username);
+
         assertNotNull(actual);
+        assertNotNull(actual.getOrderResponse());
 
         Mockito.verify(userDao, Mockito.times(1))
                 .getByUsername(username);
@@ -164,10 +168,12 @@ class GuavaServiceTest {
         mockedStatic.when(Util::generateAccountNumber).thenReturn(accountNumber);
         mockedStatic.when(Util::generateCardNumber).thenReturn(cardNumber);
 
-        SubmitResponse actual = guavaService.submitOrder(orderId, username);
+        Response actual = guavaService.submitOrder(orderId, username);
+
         assertNotNull(actual);
-        assertEquals(cardNumber, actual.getCardNumber());
-        assertEquals(accountNumber, actual.getAccountNumber());
+        assertNotNull(actual.getSubmitResponse());
+        assertEquals(cardNumber, actual.getSubmitResponse().getCardNumber());
+        assertEquals(accountNumber, actual.getSubmitResponse().getAccountNumber());
 
         Mockito.verify(orderDao, Mockito.times(1)).getOne(orderId);
         Mockito.verify(cardDao, Mockito.times(1)).getByCardNumber(cardNumber);
@@ -194,8 +200,6 @@ class GuavaServiceTest {
                 .when(orderDao)
                 .getOne(orderId);
 
-
-
         assertThrows(AccessDenyException.class, () -> guavaService.submitOrder(orderId, username));
     }
 
@@ -217,6 +221,7 @@ class GuavaServiceTest {
                 .getOne(orderId);
 
         assertThrows(AccessDenyException.class, () -> guavaService.submitOrder(orderId, username));
+
         Mockito.verify(cardDao, Mockito.times(0)).save(Mockito.any());
         Mockito.verify(cardDao, Mockito.times(0)).getByCardNumber(Mockito.any());
         Mockito.verify(cardDao, Mockito.times(0)).getByAccountNumber(Mockito.any());
@@ -241,11 +246,12 @@ class GuavaServiceTest {
                 .when(userDao)
                 .getByUsername(username);
 
-        List<OrderResponse> actual = guavaService.getOrders(username);
+        Response actual = guavaService.getOrders(username);
 
         assertNotNull(actual);
-        assertNotNull(actual.get(0));
-        assertEquals(1, actual.size());
+        assertNotNull(actual.getOrderResponses());
+        assertNotNull(actual.getOrderResponses().get(0));
+        assertEquals(1, actual.getOrderResponses().size());
 
         Mockito.verify(userDao, Mockito.times(1)).getByUsername(username);
     }
@@ -283,9 +289,11 @@ class GuavaServiceTest {
                 .when(typeDao)
                 .getOne(request.getCardTypeId());
 
-        OrderResponse actual = guavaService.updateOrder(request, orderId, username);
+        Response actual = guavaService.updateOrder(request, orderId, username);
 
         assertNotNull(actual);
+        assertNotNull(actual.getOrderResponse());
+        assertEquals("1", actual.getOrderResponse().getOrderId());
 
         Mockito.verify(orderDao, Mockito.times(1)).save(Mockito.any(OrderEntity.class));
         Mockito.verify(cardDao, Mockito.times(1)).save(Mockito.any(CardEntity.class));
@@ -316,6 +324,7 @@ class GuavaServiceTest {
                 .getOne(orderId);
 
         assertThrows(AccessDenyException.class, () -> guavaService.updateOrder(request, orderId, username));
+
         Mockito.verify(orderDao, Mockito.times(0)).save(Mockito.any(OrderEntity.class));
         Mockito.verify(cardDao, Mockito.times(0)).save(Mockito.any(CardEntity.class));
         Mockito.verify(orderDao, Mockito.times(1)).getOne(orderId);
@@ -345,6 +354,7 @@ class GuavaServiceTest {
                 .getOne(orderId);
 
         assertThrows(AccessDenyException.class, () -> guavaService.updateOrder(request, orderId, username));
+
         Mockito.verify(orderDao, Mockito.times(0)).save(Mockito.any(OrderEntity.class));
         Mockito.verify(cardDao, Mockito.times(0)).save(Mockito.any(CardEntity.class));
         Mockito.verify(orderDao, Mockito.times(1)).getOne(orderId);
@@ -372,14 +382,15 @@ class GuavaServiceTest {
                 .when(orderDao)
                 .getOne(orderId);
 
-        OrderDetailsResponse actual = guavaService.getOrderDetails(username, orderId);
+        Response actual = guavaService.getOrderDetails(username, orderId);
 
         assertNotNull(actual);
-        assertEquals(type.getName(), actual.getCardType());
-        assertEquals(card.getCodeWord(), actual.getCodeword());
-        assertEquals(card.getCardPeriod(), actual.getCardPeriod());
-        assertEquals(card.getCardHolderName(), actual.getCardHolderName());
-        assertEquals(card.getUrgent(), actual.getUrgent());
+        assertNotNull(actual.getOrderDetailsResponse());
+        assertEquals(type.getName(), actual.getOrderDetailsResponse().getCardType());
+        assertEquals(card.getCodeWord(), actual.getOrderDetailsResponse().getCodeword());
+        assertEquals(card.getCardPeriod(), actual.getOrderDetailsResponse().getCardPeriod());
+        assertEquals(card.getCardHolderName(), actual.getOrderDetailsResponse().getCardHolderName());
+        assertEquals(card.getUrgent(), actual.getOrderDetailsResponse().getUrgent());
 
         Mockito.verify(orderDao, Mockito.times(1)).getOne(orderId);
     }

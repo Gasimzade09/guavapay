@@ -1,5 +1,6 @@
 package com.guavapay.task.security.controller;
 
+import com.guavapay.task.dto.Response;
 import com.guavapay.task.dto.UserDto;
 import com.guavapay.task.security.model.dto.JwtAuthenticationRequest;
 import com.guavapay.task.security.model.dto.JwtAuthenticationResponse;
@@ -52,8 +53,20 @@ class AuthenticationControllerTest {
                 .username("alishka1991")
                 .password("123456789")
                 .build();
+        Response expected = Response.builder()
+                .userDto(userDto)
+                .build();
 
-        controller.reg(userDto);
+        Mockito.doReturn(expected)
+                .when(service)
+                .signUp(userDto);
+
+        Response actual = controller.reg(userDto);
+
+        assertNotNull(actual);
+        assertNotNull(actual.getUserDto());
+        assertNotNull(actual.getUserDto());
+
         Mockito.verify(service, Mockito.times(1)).signUp(userDto);
     }
 }
